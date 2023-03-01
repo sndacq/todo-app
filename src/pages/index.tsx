@@ -10,7 +10,7 @@ export default function Home() {
   const { token } = useAppContext();
 
   useEffect(() => {
-    if (token === '') router.push('/login');
+    if (!token) router.push('/login');
   }, []);
 
   return (
