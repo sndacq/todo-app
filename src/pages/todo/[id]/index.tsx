@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react';
+import { useQuery } from 'react-query';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { deleteTodoApi, getTodoDetailsApi, updateTodoApi } from '@/api';
-import { ITodo } from '@/utils/types';
+import {
+  deleteTodoApi, getTodoDetailsApi, updateTodoApi, getCommentsListApi,
+} from '@/api';
+import { ITodo, IComment } from '@/utils/types';
 import NavBar from '@/components/NavBar';
 import Modal from '@/components/Modal';
+import Comment from '@/components/Comment';
 
 const TodoDetails = () => {
   const router = useRouter();
@@ -12,18 +16,30 @@ const TodoDetails = () => {
   const [formData, setFormData] = useState({} as ITodo);
   const [edit, setEdit] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [comments, setComments] = useState([] as IComment[]);
+
+  const getCommentsApi = (id: string) => {
+    getCommentsListApi(id).then((res) => {
+      setComments(res);
+    }).catch((err) => console.error(err));
+  };
+  const routerQueryId = router.query.id as string;
 
   useEffect(() => {
     if (!router.isReady) return;
-    const id = router.query.id as string;
 
-    getTodoDetailsApi(id).then((res) => {
+    getTodoDetailsApi(routerQueryId).then((res) => {
       setData(res);
       setFormData(res);
-    }).catch((err) => {
-      console.error(err);
-    });
+    }).catch((err) => console.error(err));
+
+    getCommentsApi(routerQueryId);
   }, [router.isReady]);
+
+  const { refetch } = useQuery('commentsList', () => getCommentsApi(routerQueryId), {
+    refetchOnWindowFocus: false,
+    enabled: false,
+  });
 
   const handleStatusChange = () => {
     setFormData({ ...formData, status: !formData.status });
@@ -55,7 +71,7 @@ const TodoDetails = () => {
     });
   };
 
-  const handleDeleteClick = () => {
+  const handleDeleteTodo = () => {
     const id = data.id as string;
     deleteTodoApi(id).then(() => {
       setShowModal(false);
@@ -65,6 +81,12 @@ const TodoDetails = () => {
       // TODO: show error here
       console.error(err);
     });
+  };
+  const [confirmDelete, setConfirmDelete] = useState(() => handleDeleteTodo);
+
+  const handleDeleteTodoButton = () => {
+    setShowModal(true);
+    setConfirmDelete(() => handleDeleteTodo);
   };
 
   return (
@@ -82,7 +104,7 @@ const TodoDetails = () => {
             <button
               className={`text-white mr-2 bg-blue-700 hover:bg-blue-800 focus:ring-4 w-15 font-medium rounded-lg text-sm px-5 py-2.5 text-center ${edit && 'opacity-50 cursor-not-allowed'}`}
               type="button"
-              onClick={() => setShowModal(true)}
+              onClick={handleDeleteTodoButton}
               disabled={edit}
             >
               Delete
@@ -104,7 +126,7 @@ const TodoDetails = () => {
               <dt className="text-sm font-medium text-gray-500">Title</dt>
               {edit ? (
                 <input
-                  className="block w-full flex-1 rounded-none rounded-r-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  className="block w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   placeholder="Title"
                   type="text"
                   onChange={handleTitleChange}
@@ -118,7 +140,7 @@ const TodoDetails = () => {
               <dt className="text-sm font-medium text-gray-500">Description</dt>
               {edit ? (
                 <input
-                  className="block w-full flex-1 rounded-none rounded-r-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  className="block w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   placeholder="Description"
                   type="text"
                   onChange={handleDescriptionChange}
@@ -148,36 +170,21 @@ const TodoDetails = () => {
                 />
               </dd>
             </div>
-
-            {/* <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-        <dt className="text-sm font-medium text-gray-500">Attachments</dt>
-        <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-          <ul role="list" className="divide-y divide-gray-200 rounded-md border border-gray-200">
-            <li className="flex items-center justify-between py-3 pl-3 pr-4 text-sm">
-              <div className="flex w-0 flex-1 items-center">
-                <svg className="h-5 w-5 flex-shrink-0 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fill-rule="evenodd" d="M15.621 4.379a3 3 0 00-4.242 0l-7 7a3 3 0 004.241 4.243h.001l.497-.5a.75.75 0 011.064 1.057l-.498.501-.002.002a4.5 4.5 0 01-6.364-6.364l7-7a4.5 4.5 0 016.368 6.36l-3.455 3.553A2.625 2.625 0 119.52 9.52l3.45-3.451a.75.75 0 111.061 1.06l-3.45 3.451a1.125 1.125 0 001.587 1.595l3.454-3.553a3 3 0 000-4.242z" clip-rule="evenodd" />
-                </svg>
-                <span className="ml-2 w-0 flex-1 truncate">resume_back_end_developer.pdf</span>
-              </div>
-              <div className="ml-4 flex-shrink-0">
-                <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">Download</a>
-              </div>
-            </li>
-            <li className="flex items-center justify-between py-3 pl-3 pr-4 text-sm">
-              <div className="flex w-0 flex-1 items-center">
-                <svg className="h-5 w-5 flex-shrink-0 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fill-rule="evenodd" d="M15.621 4.379a3 3 0 00-4.242 0l-7 7a3 3 0 004.241 4.243h.001l.497-.5a.75.75 0 011.064 1.057l-.498.501-.002.002a4.5 4.5 0 01-6.364-6.364l7-7a4.5 4.5 0 016.368 6.36l-3.455 3.553A2.625 2.625 0 119.52 9.52l3.45-3.451a.75.75 0 111.061 1.06l-3.45 3.451a1.125 1.125 0 001.587 1.595l3.454-3.553a3 3 0 000-4.242z" clip-rule="evenodd" />
-                </svg>
-                <span className="ml-2 w-0 flex-1 truncate">coverletter_back_end_developer.pdf</span>
-              </div>
-              <div className="ml-4 flex-shrink-0">
-                <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">Download</a>
-              </div>
-            </li>
-          </ul>
-        </dd>
-      </div> */}
+            <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt className="text-sm font-medium text-gray-500">Comments</dt>
+              <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                <ul className="divide-y divide-gray-200 rounded-md border border-gray-200">
+                  {comments?.map((item) => (
+                    <Comment
+                      data={item}
+                      setConfirmDelete={setConfirmDelete}
+                      setShowModal={setShowModal}
+                      refetch={refetch}
+                    />
+                  ))}
+                </ul>
+              </dd>
+            </div>
           </dl>
         </div>
         {edit && (
@@ -200,7 +207,12 @@ const TodoDetails = () => {
         )}
 
       </div>
-      {showModal && (<Modal handleClose={() => setShowModal(false)} handleConfirm={handleDeleteClick} />)}
+      {showModal && (
+        <Modal
+          handleClose={() => setShowModal(false)}
+          handleConfirm={confirmDelete}
+        />
+      )}
     </>
   );
 };

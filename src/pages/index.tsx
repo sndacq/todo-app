@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useAppContext } from '@/context/state';
@@ -8,9 +9,9 @@ export default function Home() {
   const router = useRouter();
   const { token } = useAppContext();
 
-  // useEffect(() => {
-  //   if(token === '') router.push('/login')
-  // }, [])
+  useEffect(() => {
+    if (token === '') router.push('/login');
+  }, []);
 
   return (
     <>
