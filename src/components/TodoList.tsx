@@ -3,7 +3,12 @@ import router from 'next/router';
 import { getTodosListApi } from '@/api';
 import { ITodo } from '@/utils/types';
 import { useAppContext } from '@/context/state';
-import Modal from './Modal';
+
+const AddIcon = () => (
+  <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
 
 const TodoList = () => {
   const { userData } = useAppContext();
@@ -13,51 +18,60 @@ const TodoList = () => {
   if (error) return <p>{`An error has occurred: ${error.message}`}</p>;
 
   return (
-    <>
-      <div className="relative overflow-x-auto">
-        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-            <tr>
-              <th scope="col" className="px-6 py-3">
-                Status
-              </th>
-              <th scope="col" className="px-6 py-3">
-                Title
-              </th>
-              <th scope="col" className="px-6 py-3">
-                Description
-              </th>
-              <th scope="col" className="px-6 py-3">
-                Created at
-              </th>
+    <div className="relative overflow-x-auto">
+      <table className="w-full text-sm text-left text-gray-500">
+        <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+          <tr>
+            <th scope="col" className="px-6 py-3">
+              Status
+            </th>
+            <th scope="col" className="px-6 py-3">
+              Title
+            </th>
+            <th scope="col" className="px-6 py-3">
+              Description
+            </th>
+            <th scope="col" className="px-6 py-3">
+              Created at
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {data?.map((item) => (
+            <tr className="bg-white border-b">
+              <td className="px-6 py-4">
+                <input type="checkbox" disabled checked={item.status} className="block flex-1 rounded border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+              </td>
+              <td
+                className="px-6 py-4 cursor-pointer"
+                onClick={() => router.push(`/todo/${item.id}`)}
+              >
+                {item.title}
+              </td>
+              <td className="px-6 py-4">
+                {item.description}
+              </td>
+              <td className="px-6 py-4">
+                {item.createdAt}
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {data?.map((item) => (
-              <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                <td className="px-6 py-4">
-                  <input type="checkbox" disabled checked={item.status} className="block flex-1 rounded border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                </td>
-                <td
-                  className="px-6 py-4 cursor-pointer"
-                  onClick={() => router.push(`/todo/${item.id}`)}
-                >
-                  {item.title}
-                </td>
-                <td className="px-6 py-4">
-                  {item.description}
-                </td>
-                <td className="px-6 py-4">
-                  {item.createdAt}
-                </td>
-              </tr>
-            ))}
-
-          </tbody>
-        </table>
-      </div>
-      {/* <Modal /> */}
-    </>
+          ))}
+          <tr
+            className="cursor-pointer"
+            onClick={() => router.push('todo/create')}
+          >
+            <td colSpan={4}>
+              <div className="w-full flex justify-center bg-gray-50 px-4 py-5 sm:gap-4 sm:px-6 place-items-center">
+                <dt className="text-sm font-medium text-gray-500 flex">
+                  <AddIcon />
+                  Create new task
+                </dt>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   );
 };
 

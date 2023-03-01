@@ -1,5 +1,5 @@
 import {
-  FC, createContext, useContext, useState, useEffect,
+  FC, createContext, useContext, useState, useEffect, useMemo,
 } from 'react';
 
 interface IAppWrapperProps {
@@ -47,8 +47,12 @@ export const AppWrapper: FC<IAppWrapperProps> = ({ children }) => {
     setUserData(user);
   };
 
+  const values = useMemo(
+    () => ({ userData, storeSession, token }),
+    [userData, storeSession, token],
+  );
   return (
-    <AppContext.Provider value={{ userData, storeSession, token }}>
+    <AppContext.Provider value={values}>
       {children}
     </AppContext.Provider>
   );
