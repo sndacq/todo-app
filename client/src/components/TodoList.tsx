@@ -20,8 +20,8 @@ const TodoList = () => {
   useEffect(() => {
     if (searchValue !== '') {
       const searched = itemsList.filter((item) => item.title.includes(searchValue));
-      setItemsList(searched);
-    } else setItemsList(data);
+      setFilteredList(searched);
+    } else setFilteredList(data);
   }, [searchValue, itemsList]);
 
   useEffect(() => {
@@ -35,7 +35,7 @@ const TodoList = () => {
         if (dateA > dateB) return 1;
         return 0;
       });
-      setItemsList(sortedInc);
+      setFilteredList(sortedInc);
     } else if (sortValue === ISortValue.DEC) {
       const sortedDec = itemsList.sort((a, b) => {
         // const dateA = new Date(a.createdAt);
@@ -46,8 +46,8 @@ const TodoList = () => {
         if (dateA < dateB) return 1;
         return 0;
       });
-      setItemsList(sortedDec);
-    } else setItemsList(data);
+      setFilteredList(sortedDec);
+    } else setFilteredList(data);
   }, [sortValue, itemsList]);
 
   useEffect(() => {
