@@ -33,7 +33,7 @@ export const createTodoApi = async (data: ITodo) => axios.post('http://localhost
   .then((response) => response.data)
   .catch((err) => Promise.reject(err));
 
-export const udateTodoApi = async (todoId: string, data: ITodo) => axios.patch(`http://localhost:3004/todos/${todoId}`, {
+export const updateTodoApi = async (todoId: string, data: ITodo) => axios.patch(`http://localhost:3004/todos/${todoId}`, {
   // TODO: add updatedAt date here
   ...data,
 })
