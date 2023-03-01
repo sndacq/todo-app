@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { getTodoDetailsApi } from '@/api';
 import { ITodo } from '@/utils/types';
@@ -7,6 +8,8 @@ import NavBar from '@/components/NavBar';
 const Todo = () => {
   const router = useRouter();
   const [data, setData] = useState({} as ITodo);
+  const [formData, setFormData] = useState({} as ITodo);
+  const [edit, setEdit] = useState(false);
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -14,17 +17,31 @@ const Todo = () => {
 
     getTodoDetailsApi(id).then((res) => {
       setData(res);
+      setFormData(res);
     }).catch((err) => {
-      console.error(err)
+      console.error(err);
     });
   }, [router.isReady]);
 
   return (
     <>
+      <Head>
+        <title>Task Information</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
       <NavBar />
-      <div className="overflow-hidden bg-white shadow sm:rounded-lg">
-        <div className="px-4 py-5 sm:px-6">
+      <div className="overflow-hidden bg-white shadow sm:rounded-lg grid">
+        <div className="px-4 py-5 sm:px-6 flex justify-between">
           <h3 className="text-base font-semibold leading-6 text-gray-900">Task Information</h3>
+          <button
+            type="button"
+            className={`justify-self-end text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 ${edit ? 'opacity-50 cursor-not-allowed ' : ''}`}
+            onClick={() => setEdit(true)}
+            disabled={edit}
+          >
+            Edit
+          </button>
         </div>
         <div className="border-t border-gray-200">
           <dl>
@@ -48,9 +65,15 @@ const Todo = () => {
             <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="text-sm font-medium text-gray-500">Status</dt>
               <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                <input type="checkbox" disabled checked={data?.status} className="block flex-1 rounded border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                <input
+                  type="checkbox"
+                  disabled
+                  checked={data?.status}
+                  className="block flex-1 rounded border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                />
               </dd>
             </div>
+
             {/* <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
         <dt className="text-sm font-medium text-gray-500">Attachments</dt>
         <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
@@ -82,6 +105,24 @@ const Todo = () => {
       </div> */}
           </dl>
         </div>
+        {edit && (
+        <div className="justify-self-end px-6">
+          <button
+            type="button"
+            onClick={() => setEdit(false)}
+            className="mr-2 text-blue-700 bg-white focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+          >
+            Save
+          </button>
+        </div>
+        )}
+
       </div>
     </>
   );
