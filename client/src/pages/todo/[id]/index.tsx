@@ -10,16 +10,9 @@ import NavBar from '@/components/NavBar';
 import Modal from '@/components/Modal';
 import Comment from '@/components/Comment';
 import { AddIcon, CancelIcon, ConfirmIcon } from '@/components/Icons';
-import { useAppContext } from '@/context/state';
 
 const TodoDetails = () => {
   const router = useRouter();
-
-  const { token } = useAppContext();
-
-  useEffect(() => {
-    if (!token) router.push('/login');
-  }, []);
 
   const [data, setData] = useState({} as ITodo);
   const [formData, setFormData] = useState({} as ITodo);
@@ -34,11 +27,11 @@ const TodoDetails = () => {
       setComments(res);
     }).catch((err) => console.error(err));
   };
-  const routerQueryId = router.query.id as string;
+  let routerQueryId = '';
 
   useEffect(() => {
     if (!router.isReady) return;
-
+    routerQueryId = router.query.id as string
     getTodoDetailsApi(routerQueryId).then((res) => {
       setData(res);
       setFormData(res);

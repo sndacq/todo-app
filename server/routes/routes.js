@@ -42,11 +42,10 @@ router.post('/login', async (req, res) => {
 
 // Todo Methods
 // Get All Todos
-router.get('/todos/:token', async (req, res) => {
+router.get('/todos/all/:token', async (req, res) => {
   try{
     const userId = req.params.token;
     const userData = await User.findById(userId);
-    console.log(userData, 'get');
 
     const todos = userData?.todos?.map(item => item._id) || [];
     const records = await Todo.find({ '_id': { $in: todos } });
@@ -73,10 +72,7 @@ router.post('/todos/:token', async (req, res) => {
   try {
     const userId = req.params.token;
     const user = await User.findById(userId);
-    const newTodo = new Todo({
-      ...req.body,
-      user,
-    });
+    const newTodo = new Todo(req.body);
 
     const dataToSave = await newTodo.save();
     await User.updateOne(

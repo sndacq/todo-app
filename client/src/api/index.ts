@@ -22,7 +22,7 @@ export const registerApi = async (credentials: ICredential) => axios.post(`${BAS
   .catch((err) => Promise.reject(err));
 
 // Todos APIs
-export const getTodosListApi = async (token: string) => axios.get(`${TODOS_API}/${token}`)
+export const getTodosListApi = async (token: string) => axios.get(`${TODOS_API}/all/${token}`)
   .then((response) => response.data)
   .catch((err) => Promise.reject(err));
 
