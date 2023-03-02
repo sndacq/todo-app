@@ -3,12 +3,13 @@ import { useQuery } from 'react-query';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import {
-  deleteTodoApi, getTodoDetailsApi, updateTodoApi, getCommentsListApi,
+  deleteTodoApi, getTodoDetailsApi, updateTodoApi, getCommentsListApi, createCommentApi,
 } from '@/api';
 import { ITodo, IComment } from '@/utils/types';
 import NavBar from '@/components/NavBar';
 import Modal from '@/components/Modal';
 import Comment from '@/components/Comment';
+import { AddIcon, CancelIcon, ConfirmIcon } from '@/components/Icons';
 
 const TodoDetails = () => {
   const router = useRouter();
@@ -17,6 +18,8 @@ const TodoDetails = () => {
   const [edit, setEdit] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [comments, setComments] = useState([] as IComment[]);
+  const [commentForm, setCommentForm] = useState({} as IComment);
+  const [newComment, setNewComment] = useState(false);
 
   const getCommentsApi = (id: string) => {
     getCommentsListApi(id).then((res) => {
@@ -88,6 +91,25 @@ const TodoDetails = () => {
     setShowModal(true);
     setConfirmDelete(() => handleDeleteTodo);
   };
+
+  const handleNewCommentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCommentForm({ ...commentForm, text: e.target.value });
+  };
+
+  const handleNewCommentClick = () => {
+    setCommentForm({} as IComment);
+    setNewComment(true);
+  };
+
+  const handleSaveCommentClick = () => {
+    createCommentApi(commentForm)
+      .then(() => {
+        setCommentForm({} as IComment);
+        setNewComment(false);
+        refetch();
+      }).catch((err) => console.error(err));
+  };
+
 
   return (
     <>
@@ -182,6 +204,41 @@ const TodoDetails = () => {
                       refetch={refetch}
                     />
                   ))}
+                  <li className="flex items-center justify-between py-3 pl-3 pr-4 text-sm">
+                    <div className="flex w-0 flex-1 items-center">
+                      {newComment ? (
+                        <>
+                          <input
+                            className="block w-full flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                            placeholder="Comment"
+                            type="text"
+                            onChange={handleNewCommentChange}
+                            value={commentForm.text}
+                          />
+                          <div className="ml-4 flex">
+
+                            <div role="button" onClick={() => setNewComment(false)}>
+                              <CancelIcon />
+                            </div>
+                            <div role="button" onClick={handleSaveCommentClick}>
+                              <ConfirmIcon />
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <div 
+                          onClick={handleNewCommentClick}
+                          className="w-full flex justify-center bg-gray-50 px-4 py-5 sm:gap-4 sm:px-6 place-items-center"
+                        >
+                          <dt className="text-sm font-medium text-gray-500 flex">
+                            <AddIcon />
+                            Add new comment
+                          </dt>
+                        </div>
+                      )}
+                    </div>
+
+                  </li>
                 </ul>
               </dd>
             </div>
