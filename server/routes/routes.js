@@ -3,7 +3,6 @@ const router = express.Router();
 const User = require('../model/user');
 const Todo = require('../model/todo');
 const Comment = require('../model/comment');
-const mongoose = require('mongoose');
 
 // Register
 router.post('/register', async (req, res) => {
@@ -43,10 +42,15 @@ router.post('/login', async (req, res) => {
 
 // Todo Methods
 // Get All Todos
-router.get('/todos', async (req, res) => {
+router.get('/todos/:token', async (req, res) => {
   try{
-    const data = await Todo.find();
-    res.json(data)
+    const userId = req.params.token;
+    const userData = await User.findById(userId);
+    console.log(userData, 'get');
+
+    const todos = userData?.todos?.map(item => item._id) || [];
+    const records = await Todo.find({ '_id': { $in: todos } });
+    res.json(records);
   }
   catch(error){
     res.status(500).json({message: error.message})
@@ -65,13 +69,26 @@ router.get('/todos/:id', async (req, res) => {
 })
 
 //Create Todo
-router.post('/todos', async (req, res) => {
+router.post('/todos/:token', async (req, res) => {
   try {
-      const newTodo = req.body;
-      const data = new Todo(newTodo);
+    const userId = req.params.token;
+    const user = await User.findById(userId);
+    const newTodo = new Todo({
+      ...req.body,
+      user,
+    });
 
-      const dataToSave = await data.save();
-      res.status(200).json(dataToSave);
+    const dataToSave = await newTodo.save();
+    await User.updateOne(
+      user,
+      {
+        $push: {
+          todos: newTodo
+        }
+      },
+      { new: true, useFindAndModify: false }
+    );
+    res.status(200).json(dataToSave);
   }
   catch (error) {
       res.status(400).json({ message: error.message })

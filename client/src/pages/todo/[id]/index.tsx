@@ -10,9 +10,17 @@ import NavBar from '@/components/NavBar';
 import Modal from '@/components/Modal';
 import Comment from '@/components/Comment';
 import { AddIcon, CancelIcon, ConfirmIcon } from '@/components/Icons';
+import { useAppContext } from '@/context/state';
 
 const TodoDetails = () => {
   const router = useRouter();
+
+  const { token } = useAppContext();
+
+  useEffect(() => {
+    if (!token) router.push('/login');
+  }, []);
+
   const [data, setData] = useState({} as ITodo);
   const [formData, setFormData] = useState({} as ITodo);
   const [edit, setEdit] = useState(false);

@@ -34,7 +34,7 @@ interface IFilterOptions {
 
 interface IStateContext {
   userData: IUser;
-  storeSession: (data: ISession) => void;
+  storeSession: (data: any) => void;
   token: string;
   searchValue: string;
   setSearchValue: React.Dispatch<string>;
@@ -75,12 +75,12 @@ export const AppWrapper: FC<IAppWrapperProps> = ({ children }) => {
     setToken(tokenString || '');
   }, []);
 
-  const storeSession = (data: ISession) => {
-    const { accessToken, user } = data;
-    const tokenString = JSON.stringify(accessToken);
+  const storeSession = (data: any) => {
+    // const { accessToken, user } = data;
+    const tokenString = data.id;
     localStorage.setItem('token', tokenString);
     setToken(tokenString);
-    setUserData(user);
+    setUserData(data);
   };
 
   const toggleSortValue = () => {

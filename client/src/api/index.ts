@@ -22,7 +22,7 @@ export const registerApi = async (credentials: ICredential) => axios.post(`${BAS
   .catch((err) => Promise.reject(err));
 
 // Todos APIs
-export const getTodosListApi = async () => axios.get(`${TODOS_API}`)
+export const getTodosListApi = async (token: string) => axios.get(`${TODOS_API}/${token}`)
   .then((response) => response.data)
   .catch((err) => Promise.reject(err));
 
@@ -30,7 +30,7 @@ export const getTodoDetailsApi = async (todoId: string) => axios.get(`${TODOS_AP
   .then((response) => response.data)
   .catch((err) => Promise.reject(err));
 
-export const createTodoApi = async (data: ITodo) => axios.post(TODOS_API, {
+export const createTodoApi = async (data: ITodo, token: string) => axios.post(`${TODOS_API}/${token}`, {
   // TODO: add createdAt date here
   ...data,
 })

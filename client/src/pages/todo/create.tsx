@@ -1,13 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import NavBar from '@/components/NavBar';
 import { ITodo } from '@/utils/types';
 import { createTodoApi } from '@/api';
+import { useAppContext } from '@/context/state';
 
 const Create = () => {
   const router = useRouter();
   const [formData, setFormData] = useState({ status: true } as ITodo);
+  const { token } = useAppContext();
+
+  useEffect(() => {
+    if (!token) router.push('/login');
+  }, []);
 
   const handleStatusChange = () => {
     setFormData({ ...formData, status: !formData.status });
@@ -22,7 +28,7 @@ const Create = () => {
   };
 
   const handleCreateClick = () => {
-    createTodoApi({ ...formData }).then((res) => {
+    createTodoApi({ ...formData }, token).then((res) => {
       router.push(`/todo/${res.id}`);
       // TODO: show success message here
     }).catch((err) => {

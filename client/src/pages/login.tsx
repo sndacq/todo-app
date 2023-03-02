@@ -19,7 +19,7 @@ const Login = () => {
       storeSession(data);
     }).catch((err) => {
       // TODO: handle login errors
-      console.log(err.response.data);
+      console.log(err);
     });
   };
 
@@ -28,7 +28,7 @@ const Login = () => {
       storeSession(data);
     }).catch((err) => {
       // TODO: handle login errors
-      console.log(err.response.data);
+      console.log(err);
     });
   };
 
