@@ -6,7 +6,7 @@ interface ICredential {
   password: string;
 }
 
-const BASE_PATH = 'http://localhost:3004';
+const BASE_PATH = 'http://localhost:5000/api';
 const TODOS_API = `${BASE_PATH}/todos`;
 
 export const loginApi = async (credentials: ICredential) => axios.post(`${BASE_PATH}/login`, {
@@ -22,7 +22,7 @@ export const registerApi = async (credentials: ICredential) => axios.post(`${BAS
   .catch((err) => Promise.reject(err));
 
 // Todos APIs
-export const getTodosListApi = async (userId: string) => axios.get(`${TODOS_API}?userId=${userId}`)
+export const getTodosListApi = async () => axios.get(`${TODOS_API}`)
   .then((response) => response.data)
   .catch((err) => Promise.reject(err));
 
@@ -37,7 +37,7 @@ export const createTodoApi = async (data: ITodo) => axios.post(TODOS_API, {
   .then((response) => response.data)
   .catch((err) => Promise.reject(err));
 
-export const updateTodoApi = async (todoId: string, data: ITodo) => axios.patch(`${TODOS_API}/${todoId}`, {
+export const updateTodoApi = async (todoId: string, data: ITodo) => axios.put(`${TODOS_API}/${todoId}`, {
   // TODO: add updatedAt date here
   ...data,
 })
@@ -49,7 +49,7 @@ export const deleteTodoApi = async (todoId: string) => axios.delete(`${TODOS_API
   .catch((err) => Promise.reject(err));
 
 // Comments APIs
-export const createCommentApi = async (data: IComment) => axios.post(`${TODOS_API}/${data.todoId}/comments`, {
+export const createCommentApi = async (data: IComment, todoId: string) => axios.post(`${TODOS_API}/${todoId}/comments`, {
   // TODO: add createdAt date here
   ...data,
 })
@@ -60,7 +60,7 @@ export const getCommentsListApi = async (todoId: string) => axios.get(`${TODOS_A
   .then((response) => response.data)
   .catch((err) => Promise.reject(err));
 
-export const updateCommentApi = async (todoId: string, data: IComment) => axios.patch(`${TODOS_API}/${todoId}/comments/${data.id}`, {
+export const updateCommentApi = async (todoId: string, data: IComment) => axios.put(`${TODOS_API}/${todoId}/comments/${data.id}`, {
   // TODO: add updatedAt date here
   ...data,
 })

@@ -93,7 +93,7 @@ const TodoDetails = () => {
   };
 
   const handleNewCommentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCommentForm({ ...commentForm, text: e.target.value });
+    setCommentForm({ ...commentForm, comment: e.target.value });
   };
 
   const handleNewCommentClick = () => {
@@ -102,14 +102,13 @@ const TodoDetails = () => {
   };
 
   const handleSaveCommentClick = () => {
-    createCommentApi(commentForm)
+    createCommentApi(commentForm, routerQueryId)
       .then(() => {
         setCommentForm({} as IComment);
         setNewComment(false);
         refetch();
       }).catch((err) => console.error(err));
   };
-
 
   return (
     <>
@@ -198,7 +197,7 @@ const TodoDetails = () => {
                 <ul className="divide-y divide-gray-200 rounded-md border border-gray-200">
                   {comments?.map((item) => (
                     <Comment
-                      data={item}
+                      data={{ ...item, todoId: routerQueryId }}
                       setConfirmDelete={setConfirmDelete}
                       setShowModal={setShowModal}
                       refetch={refetch}
@@ -213,7 +212,7 @@ const TodoDetails = () => {
                             placeholder="Comment"
                             type="text"
                             onChange={handleNewCommentChange}
-                            value={commentForm.text}
+                            value={commentForm.comment}
                           />
                           <div className="ml-4 flex">
 
@@ -226,7 +225,8 @@ const TodoDetails = () => {
                           </div>
                         </>
                       ) : (
-                        <div 
+                        <div
+                          role="button"
                           onClick={handleNewCommentClick}
                           className="w-full flex justify-center bg-gray-50 px-4 py-5 sm:gap-4 sm:px-6 place-items-center"
                         >

@@ -15,7 +15,7 @@ interface ICommentProps {
 const Comment: FC<ICommentProps> = ({
   data, setShowModal, setConfirmDelete, refetch,
 }) => {
-  const { text, id, todoId } = data;
+  const { comment, id, todoId } = data;
   const [form, setForm] = useState('');
   const [edit, setEdit] = useState(false);
 
@@ -25,11 +25,11 @@ const Comment: FC<ICommentProps> = ({
 
   const handleEditClick = () => {
     setEdit(true);
-    setForm(data.text);
+    setForm(data.comment);
   };
 
   const handleSaveClick = () => {
-    updateCommentApi(todoId, { ...data, text: form })
+    updateCommentApi(todoId, { ...data, comment: form })
       .then(() => {
         setEdit(false);
         refetch();
@@ -60,7 +60,7 @@ const Comment: FC<ICommentProps> = ({
             value={form}
           />
         ) : (
-          <span className="ml-2 w-0 flex-1 truncate">{text}</span>
+          <span className="ml-2 w-0 flex-1 truncate">{comment}</span>
         )}
       </div>
       <div className="ml-4 flex">

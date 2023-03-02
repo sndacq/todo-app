@@ -1,6 +1,6 @@
 export interface IComment {
   id?: string;
-  text: string;
+  comment: string;
   todoId: string;
   createdAt: string;
   updatedAt: string;

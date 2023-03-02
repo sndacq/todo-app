@@ -12,7 +12,7 @@ const TodoList = () => {
   const {
     userData, searchValue, sortValue, toggleSortValue, filterOptions,
   } = useAppContext();
-  const { isLoading, data } = useQuery('todoDetails', () => getTodosListApi(userData.id).then((res) => {
+  const { isLoading, data } = useQuery('todoDetails', () => getTodosListApi().then((res) => {
     setItemsList(res);
     return res;
   }));
@@ -27,10 +27,8 @@ const TodoList = () => {
   useEffect(() => {
     if (sortValue === ISortValue.INC) {
       const sortedInc = itemsList.sort((a, b) => {
-        // const dateA = new Date(a.createdAt);
-        // const dateB = new Date(b.createdAt);
-        const dateA = a.createdAt;
-        const dateB = b.createdAt;
+        const dateA = new Date(a.createdAt);
+        const dateB = new Date(b.createdAt);
         if (dateA < dateB) return -1;
         if (dateA > dateB) return 1;
         return 0;
@@ -38,10 +36,8 @@ const TodoList = () => {
       setFilteredList(sortedInc);
     } else if (sortValue === ISortValue.DEC) {
       const sortedDec = itemsList.sort((a, b) => {
-        // const dateA = new Date(a.createdAt);
-        // const dateB = new Date(b.createdAt);
-        const dateA = a.createdAt;
-        const dateB = b.createdAt;
+        const dateA = new Date(a.createdAt);
+        const dateB = new Date(b.createdAt);
         if (dateA > dateB) return -1;
         if (dateA < dateB) return 1;
         return 0;
