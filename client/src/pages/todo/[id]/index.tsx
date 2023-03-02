@@ -31,7 +31,7 @@ const TodoDetails = () => {
 
   useEffect(() => {
     if (!router.isReady) return;
-    routerQueryId = router.query.id as string
+    routerQueryId = router.query.id as string;
     getTodoDetailsApi(routerQueryId).then((res) => {
       setData(res);
       setFormData(res);

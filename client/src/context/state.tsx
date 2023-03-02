@@ -12,10 +12,10 @@ interface IUser {
   id: string;
 }
 
-interface ISession {
-  accessToken: string;
-  user: IUser;
-}
+// interface ISession {
+//   accessToken: string;
+//   user: IUser;
+// }
 
 export enum ISortValue {
   INC = 'INC',
@@ -35,6 +35,7 @@ interface IFilterOptions {
 interface IStateContext {
   userData: IUser;
   storeSession: (data: any) => void;
+  deleteSession: () => void;
   token: string;
   searchValue: string;
   setSearchValue: React.Dispatch<string>;
@@ -47,6 +48,7 @@ interface IStateContext {
 const AppContext = createContext<IStateContext>({
   userData: {} as IUser,
   storeSession: () => {},
+  deleteSession: () => {},
   token: '',
   searchValue: '',
   setSearchValue: () => {},
@@ -83,6 +85,12 @@ export const AppWrapper: FC<IAppWrapperProps> = ({ children }) => {
     setUserData(data);
   };
 
+  const deleteSession = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+    }
+  };
+
   const toggleSortValue = () => {
     if (sortValue === ISortValue.INC) {
       setSortValue(ISortValue.DEC);
@@ -95,6 +103,7 @@ export const AppWrapper: FC<IAppWrapperProps> = ({ children }) => {
     () => ({
       userData,
       storeSession,
+      deleteSession,
       token,
       searchValue,
       setSearchValue,
@@ -106,6 +115,7 @@ export const AppWrapper: FC<IAppWrapperProps> = ({ children }) => {
     [
       userData,
       storeSession,
+      deleteSession,
       token,
       searchValue,
       setSearchValue,
