@@ -1,38 +1,92 @@
 const express = require('express');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
 const router = express.Router();
+
 const User = require('../model/user');
 const Todo = require('../model/todo');
 const Comment = require('../model/comment');
 
+const auth = require("../middleware/auth");
+
 // Register
 router.post('/register', async (req, res) => {
-  const data = new User({
-    email: req.body.email,
-    password: req.body.password
-  });
-  try{
-    const dataToSave = await data.save();
-    res.status(200).json(dataToSave);
-  }
-  catch(error){
-    res.status(400).json({message: error.message});
+  try {
+    const { email, password } = req.body;
+
+    if (!(email && password)) {
+      res.status(400).send("All input is required");
+      return;
+    }
+
+    const oldUser = await User.findOne({ email });
+
+    if (oldUser) {
+      return res.status(409).send("User Already Exist. Please Login");
+    }
+
+    encryptedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      email: email.toLowerCase(),
+      password: encryptedPassword,
+    });
+
+    const token = jwt.sign(
+      { userId: user._id, email },
+      process.env.TOKEN_KEY,
+      {
+        expiresIn: "2h",
+      }
+    );
+
+    user.token = token;
+
+    res.status(201).json(user);
+  } catch (err) {
+    console.log(err);
   }
 });
 
 // Login
 router.post('/login', async (req, res) => {
-  const email = req.body.email;
-  const password = req.body.password;
-  let reqData;
-  if (email.length > 0 && password.length > 0) {
-    reqData = {
-      email: email,
-      password: password
-    };
-  } else res.json({ status: 0, message: err });
+  try {
+    const { email, password } = req.body;
 
+    if (!(email && password)) {
+      res.status(400).send("All input is required");
+      return;
+    }
+    const user = await User.findOne({ email });
+
+    if (user && (await bcrypt.compare(password, user.password))) {
+      const token = jwt.sign(
+        { userId: user._id, email },
+        process.env.TOKEN_KEY,
+        {
+          expiresIn: "2h",
+        }
+      );
+
+      user.token = token;
+      res.status(200).json(user);
+      return;
+    }
+    res.status(400).send("Invalid Credentials");
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+// Todo Methods
+// Get All Todos
+router.get('/todos', auth, async (req, res) => {
   try{
-    const data = await User.findOne(reqData);
+    const { userId } = req.user;
+    const user = await User.findById(userId);
+
+    const data = await Todo.find({ user });
     res.json(data);
   }
   catch(error){
@@ -40,27 +94,18 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Todo Methods
-// Get All Todos
-router.get('/todos/all/:token', async (req, res) => {
-  try{
-    const userId = req.params.token;
-    const userData = await User.findById(userId);
-
-    const todos = userData?.todos?.map(item => item._id) || [];
-    const records = await Todo.find({ '_id': { $in: todos } });
-    res.json(records);
-  }
-  catch(error){
-    res.status(500).json({message: error.message})
-  }
-})
 
 //Get Todo by ID
-router.get('/todos/:id', async (req, res) => {
+router.get('/todos/:id', auth, async (req, res) => {
   try{
+    const { userId } = req.user;
+    const user = await User.findById(userId);
     const data = await Todo.findById(req.params.id);
-    res.json(data)
+    
+    if (data.user.valueOf() === user.id) {
+      res.json(data);
+    } else res.status(400).json({});
+    
   }
   catch(error){
       res.status(500).json({message: error.message})
@@ -68,22 +113,16 @@ router.get('/todos/:id', async (req, res) => {
 })
 
 //Create Todo
-router.post('/todos/:token', async (req, res) => {
+router.post('/todos', auth,  async (req, res) => {
   try {
-    const userId = req.params.token;
+    const { userId } = req.user;
     const user = await User.findById(userId);
-    const newTodo = new Todo(req.body);
+
+    const todoDetails = req.body;
+    const newTodo = new Todo({...todoDetails, user: user._id});
 
     const dataToSave = await newTodo.save();
-    await User.updateOne(
-      user,
-      {
-        $push: {
-          todos: newTodo
-        }
-      },
-      { new: true, useFindAndModify: false }
-    );
+
     res.status(200).json(dataToSave);
   }
   catch (error) {
@@ -92,7 +131,7 @@ router.post('/todos/:token', async (req, res) => {
 });
 
 //Update Todo by ID
-router.put('/todos/:id', async (req, res) => {
+router.put('/todos/:id', auth, async (req, res) => {
   try {
       const id = req.params.id;
       const updatedData = req.body;
@@ -109,7 +148,7 @@ router.put('/todos/:id', async (req, res) => {
 })
 
 //Delete Todo by ID
-router.delete('/todos/:id', async (req, res) => {
+router.delete('/todos/:id', auth, async (req, res) => {
   try {
     const id = req.params.id;
     const data = await Todo.findByIdAndDelete(id);
@@ -122,12 +161,16 @@ router.delete('/todos/:id', async (req, res) => {
 
 // Comment Methods
 // Get All Comments
-router.get('/todos/:todoId/comments', async (req, res) => {
+router.get('/todos/:todoId/comments', auth, async (req, res) => {
   try{
-    const todoId = req.params.todoId;
-    const data = await Todo.findById(todoId);
+    const _id = req.params.todoId;
 
-    const comments = data.comments.map(item => item._id)
+    const { userId } = req.user;
+    const user = await User.findById(userId);
+
+    const todoData = await Todo.findOne({_id, user: user._id});
+
+    const comments = todoData?.comments.map(item => item._id)
     const records = await Comment.find({ '_id': { $in: comments } });
     res.json(records);
   }
@@ -136,11 +179,20 @@ router.get('/todos/:todoId/comments', async (req, res) => {
   }
 })
 
-//Get Comment by ID
-router.get('/comments/:id', async (req, res) => {
+// Not needed
+// Get Comment by ID
+router.get('/comments/:id', auth, async (req, res) => {
   try{
-    const data = await Comment.findById(req.params.id);
-    res.json(data)
+    const { id } = req.params;
+    const { userId } = req.user;
+
+    const user = await User.findById(userId);
+    const todoData = await Todo.findOne({user: user._id, comments: { "$in" : [id]}});
+
+    if (todoData) {
+      const data = await Comment.findById(id);
+      res.json(data);
+    } else res.status(400).json({});    
   }
   catch(error){
       res.status(500).json({message: error.message})
@@ -148,14 +200,14 @@ router.get('/comments/:id', async (req, res) => {
 })
 
 //Create comment by todoId
-router.post('/todos/:todoId/comments', async (req, res) => {
+router.post('/todos/:todoId/comments', auth, async (req, res) => {
   try {
       const todoId = req.params.todoId;
       const todo = await Todo.findById(todoId);
 
       const data = new Comment({
         comment: req.body.comment,
-        todo,
+        todo: todo._id,
       });
 
       const dataToSave = await data.save();
@@ -176,7 +228,7 @@ router.post('/todos/:todoId/comments', async (req, res) => {
 });
 
 //Update Todo by ID
-router.put('/todos/:todoId/comments/:id', async (req, res) => {
+router.put('/todos/:todoId/comments/:id', auth, async (req, res) => {
   try {
       const { id } = req.params;
       const updatedData = req.body;
@@ -193,7 +245,7 @@ router.put('/todos/:todoId/comments/:id', async (req, res) => {
 })
 
 //Delete Comment by ID
-router.delete('/todos/:todoId/comments/:id', async (req, res) => {
+router.delete('/todos/:todoId/comments/:id', auth, async (req, res) => {
   try {
     const id = req.params.id;
     const data = await Comment.findByIdAndDelete(id);
