@@ -10,10 +10,10 @@ const TodoList = () => {
   const [itemsList, setItemsList] = useState([] as ITodo[]);
   const [filteredList, setFilteredList] = useState([] as ITodo[]);
   const {
-    token, searchValue, sortValue, toggleSortValue, filterOptions,
+    searchValue, sortValue, toggleSortValue, filterOptions,
   } = useAppContext();
 
-  const { isLoading, data } = useQuery('todoDetails', () => getTodosListApi(token).then((res) => {
+  const { isLoading, data } = useQuery('todoDetails', () => getTodosListApi().then((res) => {
     setItemsList(res);
     return res;
   }));

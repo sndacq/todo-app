@@ -28,7 +28,7 @@ const Create = () => {
   };
 
   const handleCreateClick = () => {
-    createTodoApi({ ...formData }, token).then((res) => {
+    createTodoApi(formData).then((res) => {
       router.push(`/todo/${res.id}`);
       // TODO: show success message here
     }).catch((err) => {

@@ -9,13 +9,11 @@ interface IAppWrapperProps {
 interface IUser {
   email: string;
   name?: string;
-  id: string;
 }
 
-// interface ISession {
-//   accessToken: string;
-//   user: IUser;
-// }
+interface ISession extends IUser {
+  token: string;
+}
 
 export enum ISortValue {
   INC = 'INC',
@@ -77,12 +75,10 @@ export const AppWrapper: FC<IAppWrapperProps> = ({ children }) => {
     setToken(tokenString || '');
   }, []);
 
-  const storeSession = (data: any) => {
-    // const { accessToken, user } = data;
-    const tokenString = data.id;
-    localStorage.setItem('token', tokenString);
-    setToken(tokenString);
-    setUserData(data);
+  const storeSession = (data: ISession) => {
+    localStorage.setItem('token', data.token);
+    setToken(data.token);
+    setUserData({ email: data.email });
   };
 
   const deleteSession = () => {

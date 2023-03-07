@@ -9,6 +9,13 @@ interface ICredential {
 const BASE_PATH = 'http://localhost:5000/api';
 const TODOS_API = `${BASE_PATH}/todos`;
 
+let token;
+if (typeof window !== 'undefined') {
+  token = localStorage.getItem('token');
+}
+
+axios.defaults.headers.common['x-access-token'] = token;
+
 export const loginApi = async (credentials: ICredential) => axios.post(`${BASE_PATH}/login`, {
   ...credentials,
 })
@@ -22,7 +29,7 @@ export const registerApi = async (credentials: ICredential) => axios.post(`${BAS
   .catch((err) => Promise.reject(err));
 
 // Todos APIs
-export const getTodosListApi = async (token: string) => axios.get(`${TODOS_API}/all/${token}`)
+export const getTodosListApi = async () => axios.get(TODOS_API)
   .then((response) => response.data)
   .catch((err) => Promise.reject(err));
 
@@ -30,7 +37,7 @@ export const getTodoDetailsApi = async (todoId: string) => axios.get(`${TODOS_AP
   .then((response) => response.data)
   .catch((err) => Promise.reject(err));
 
-export const createTodoApi = async (data: ITodo, token: string) => axios.post(`${TODOS_API}/${token}`, {
+export const createTodoApi = async (data: ITodo) => axios.post(TODOS_API, {
   // TODO: add createdAt date here
   ...data,
 })

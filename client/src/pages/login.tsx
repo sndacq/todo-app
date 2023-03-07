@@ -18,7 +18,6 @@ const Login = () => {
     registerApi({ email, password }).then((data) => {
       storeSession(data);
     }).catch((err) => {
-      // TODO: handle login errors
       console.log(err);
     });
   };
@@ -27,7 +26,6 @@ const Login = () => {
     loginApi({ email, password }).then((data) => {
       storeSession(data);
     }).catch((err) => {
-      // TODO: handle login errors
       console.log(err);
     });
   };

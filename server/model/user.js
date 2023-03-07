@@ -12,10 +12,7 @@ const userSchema = new Schema({
     required: true,
     unique: true
   },
-  todos: [{
-    type: Schema.Types.ObjectId,
-    ref: "Todo"
-  }]
+  token: { type: String }
 })
 
 // Ensure virtual fields are serialised.
